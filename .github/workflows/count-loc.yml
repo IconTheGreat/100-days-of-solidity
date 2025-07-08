@@ -1,23 +1,49 @@
-- name: Count Solidity LOC and update progress-log.md
-  run: |
-    echo "📂 Current Directory:"
-    ls -R
+name: Count Solidity LOC
 
-    echo "📄 Searching for .sol files in src/"
-    FILES=$(find src -type f -name '*.sol')
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-    if [ -z "$FILES" ]; then
-      echo "❌ No Solidity files found!"
-      LOC=0
-    else
-      echo "✅ Found Solidity files:"
-      echo "$FILES"
-      LOC=$(cat $FILES | wc -l)
-    fi
+jobs:
+  count-loc:
+    runs-on: ubuntu-latest
 
-    DATE=$(date +"%Y-%m-%d")
-    echo "- $DATE: $LOC lines of Solidity code." >> progress-log.md
+    permissions:
+      contents: write
 
-    git add progress-log.md
-    git commit -m "chore: update progress log for $DATE — $LOC LOC" || echo "Nothing to commit"
-    git push origin main
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+
+      - name: Set up Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Count Solidity LOC and update progress-log.md
+        run: |
+          echo "📂 Current Directory:"
+          ls -R
+
+          echo "📄 Searching for .sol files in src/"
+          FILES=$(find src -type f -name '*.sol')
+
+          if [ -z "$FILES" ]; then
+            echo "❌ No Solidity files found!"
+            LOC=0
+          else
+            echo "✅ Found Solidity files:"
+            echo "$FILES"
+            LOC=$(cat $FILES | wc -l)
+          fi
+
+          DATE=$(date +"%Y-%m-%d")
+          echo "- $DATE: $LOC lines of Solidity code." >> progress-log.md
+
+          git add progress-log.md
+          git commit -m "chore: update progress log for $DATE — $LOC LOC" || echo "Nothing to commit"
+          git push origin main
