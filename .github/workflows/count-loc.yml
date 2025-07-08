@@ -25,25 +25,19 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Count Solidity LOC and update progress-log.md
-        run: |
-          echo "📂 Current Directory:"
-          ls -R
+  run: |
+    echo "🧪 Listing all files GitHub can see:"
+    find . -type f
 
-          echo "📄 Searching for .sol files in src/"
-          FILES=$(find src -type f -name '*.sol')
+    echo "🧪 Looking for .sol files:"
+    find . -name '*.sol'
 
-          if [ -z "$FILES" ]; then
-            echo "❌ No Solidity files found!"
-            LOC=0
-          else
-            echo "✅ Found Solidity files:"
-            echo "$FILES"
-            LOC=$(cat $FILES | wc -l)
-          fi
+    LOC=$(find . -name '*.sol' | xargs cat | wc -l || echo 0)
 
-          DATE=$(date +"%Y-%m-%d")
-          echo "- $DATE: $LOC lines of Solidity code." >> progress-log.md
+    echo "📊 Total LOC: $LOC"
+    DATE=$(date +"%Y-%m-%d")
+    echo "- $DATE: $LOC lines of Solidity code." >> progress-log.md
 
-          git add progress-log.md
-          git commit -m "chore: update progress log for $DATE — $LOC LOC" || echo "Nothing to commit"
-          git push origin main
+    git add progress-log.md
+    git commit -m "update: $LOC LOC on $DATE" || echo "Nothing to commit"
+    git push origin main
