@@ -33,7 +33,7 @@ contract ETHStaking {
         bool hasStaked = false;
 
         // looping through the stakers array to get if the msg.sender is a staker
-        for (uint i = 0; i < stakers.length; i++) {
+        for (uint256 i = 0; i < stakers.length; i++) {
             if (stakers[i] == msg.sender) {
                 hasStaked = true;
                 break;
@@ -55,7 +55,8 @@ contract ETHStaking {
         uint256 total;
 
         // looping through the array of total ether staked
-        for (uint i = 0; i < totalStakedETH.length; i++) {
+
+        for (uint256 i = 0; i < totalStakedETH.length; i++) {
             total += totalStakedETH[i];
         }
 
