@@ -10,11 +10,16 @@ jobs:
   count-loc:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # ✅ Gives permission to push commits
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          persist-credentials: true  # ✅ Keeps token for pushing
 
-      - name: Set up Git
+      - name: Set up Git identity
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -23,14 +28,10 @@ jobs:
         run: |
           echo "🔍 Counting Solidity LOC..."
 
-          # Count total LOC
           LOC=$(find src test script -name '*.sol' | xargs wc -l | tail -n 1 | awk '{print $1}')
           DATE=$(date +"%Y-%m-%d")
           echo "- $DATE: $LOC lines of Solidity code." >> progress-log.md
 
-          echo "📄 Updated progress-log.md with $LOC lines on $DATE"
-
-          # Commit the updated log
           git add progress-log.md
-          git commit -m "chore: update progress log for $DATE — $LOC LOC" || echo "No changes to commit"
-          git push
+          git commit -m "chore: update progress log for $DATE — $LOC LOC" || echo "Nothing to commit"
+          git push origin main
