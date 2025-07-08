@@ -1,43 +1,23 @@
 name: Count Solidity LOC
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+on: [push]
 
 jobs:
   count-loc:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: true
+    - uses: actions/checkout@v4
 
-      - name: Set up Git identity
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    - name: Count lines per .sol file
+      run: |
+        echo "Line count per .sol file:"
+        find . -name '*.sol' -type f -exec sh -c 'echo "$(wc -l < {}) {}"' \; | sort -nr
 
-      - name: Count Solidity LOC and update progress-log.md
-  run: |
-    echo "🧪 Listing all files GitHub can see:"
-    find . -type f
+    - name: Count total lines in .sol files
+      id: total-loc
+      run: |
+        total_lines=$(find . -name '*.sol' -type f -exec cat {} + | wc -l)
+        echo "total_lines=$total_lines" >> $GITHUB_OUTPUT
 
-    echo "🧪 Looking for .sol files:"
-    find . -name '*.sol'
-
-    LOC=$(find . -name '*.sol' | xargs cat | wc -l || echo 0)
-
-    echo "📊 Total LOC: $LOC"
-    DATE=$(date +"%Y-%m-%d")
-    echo "- $DATE: $LOC lines of Solidity code." >> progress-log.md
-
-    git add progress-log.md
-    git commit -m "update: $LOC LOC on $DATE" || echo "Nothing to commit"
-    git push origin main
+    - name: Display total result
+      run: echo "Total lines in all .sol files: ${{ steps.total-loc.outputs.total_lines }}"
