@@ -38,11 +38,14 @@ contract ETHStaking {
                 break;
             }
         }
-        require(hasStaked = true, "You have not stake yet");
-        require(block.timestamp >= stakeTime[msg.sender] + lockUpPeriod, "wait for 7 dyas after staking");
-        require(_amount < balances[msg.sender], "insufficient balance");
+        require(hasStaked == true, "You have not stake yet");
+        require(
+            block.timestamp >= stakeTime[msg.sender] + lockUpPeriod,
+            "wait for 7 dyas after staking"
+        );
+        require(_amount <= balances[msg.sender], "insufficient balance");
         balances[msg.sender] -= _amount;
-        (bool success,) = payable(msg.sender).call{value: _amount}("");
+        (bool success, ) = payable(msg.sender).call{value: _amount}("");
         require(success, "Transfer failed");
     }
 
@@ -60,7 +63,7 @@ contract ETHStaking {
         // reset total balance to avoid reentrancy
         total = 0;
         // transfer total to owner
-        (bool success,) = payable(msg.sender).call{value: total}("");
+        (bool success, ) = payable(msg.sender).call{value: total}("");
         require(success, "Transfer failed");
     }
 }

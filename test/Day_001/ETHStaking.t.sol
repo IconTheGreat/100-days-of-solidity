@@ -7,6 +7,8 @@ import {ETHStaking} from "src/Day_001/ETHStaking.sol";
 contract ETHStakingTest is Test {
     ETHStaking public stakingContract;
 
+    receive() external payable {}
+
     function setUp() public {
         stakingContract = new ETHStaking();
     }
