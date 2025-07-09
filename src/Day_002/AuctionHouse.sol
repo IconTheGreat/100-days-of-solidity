@@ -45,21 +45,22 @@ contract AuctionHouse {
         require(msg.sender != highestBidder, "Highest bidders cant withdraw");
         require(amount > 0, "no amount to withdraw yet");
         bool hasEntered = false;
-        for (uint i = 0; i < bidders.length; i++)
+        for (uint256 i = 0; i < bidders.length; i++) {
             if (bidders[i] == msg.sender) {
                 hasEntered = true;
                 break;
             }
+        }
         require(hasEntered = true, "You are not a bidder!");
 
         // reset user bid amount to avoid reentrancy
         bidAmount[msg.sender] = 0;
 
         // transefer amount to msg.sender
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        (bool success,) = payable(msg.sender).call{value: amount}("");
         require(success, "Transfer failed");
     }
-    
+
     function getAllBidders() public view returns (address[] memory) {
         return bidders;
     }
