@@ -1,5 +1,4 @@
 //SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.19;
 
 contract ETHStaking {
@@ -46,7 +45,8 @@ contract ETHStaking {
         );
         require(_amount < balances[msg.sender], "insufficient balance");
         balances[msg.sender] -= _amount;
-        payable(msg.sender).transfer(_amount);
+        (bool success, ) = payable(msg.sender).call{value: _amount}("");
+        require(success, "Transfer failed");
     }
 
     function complete() external onlyOwner {
@@ -60,7 +60,10 @@ contract ETHStaking {
             total += totalStakedETH[i];
         }
 
+        // reset total balance to avoid reentrancy
+        total = 0;
         // transfer total to owner
-        payable(msg.sender).transfer(total);
+        (bool success, ) = payable(msg.sender).call{value: total}("");
+        require(success, "Transfer failed");
     }
 }
