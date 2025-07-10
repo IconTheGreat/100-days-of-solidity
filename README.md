@@ -90,16 +90,20 @@ Follow these steps to run the examples locally:
 Install Foundry
 If you don’t have Foundry installed:
 
+``` bash 
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
+```
 
 Build the Contracts
-forge build
+```bash 
+forge build 
+```
 
 Run the Tests
-forge test
-
-Each project’s folder may also include its own instructions if needed.
+```bash 
+forge test 
+```
 
 ## Contributing
 Contributions, suggestions, and feedback are welcome.
