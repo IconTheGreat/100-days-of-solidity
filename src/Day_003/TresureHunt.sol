@@ -14,6 +14,11 @@ contract TreasureHunt {
     constructor(uint256 treasure, string memory _secretPhrase) payable {
         owner = msg.sender;
         require(treasure > 0, "treasure must be greater than 0");
+        require(msg.value == treasure, "msg.value must equal _treasure");
+        require(
+            bytes(_secretPhrase).length > 0,
+            "Secret phrase cannot be empty"
+        );
         secretHash = keccak256(abi.encodePacked(_secretPhrase));
         startTime = block.timestamp;
     }
