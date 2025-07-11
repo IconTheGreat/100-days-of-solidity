@@ -39,7 +39,7 @@ contract AuctionHouse {
 
         uint256 max = 0;
         address winner;
-        for (uint i = 0; i < bidders.length; i++) {
+        for (uint256 i = 0; i < bidders.length; i++) {
             address bidder = bidders[i];
             uint256 _bid = bidAmount[bidder];
 
@@ -76,7 +76,7 @@ contract AuctionHouse {
         bidAmount[msg.sender] = 0;
 
         // transefer amount to msg.sender
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        (bool success,) = payable(msg.sender).call{value: amount}("");
         require(success, "Transfer failed");
     }
 

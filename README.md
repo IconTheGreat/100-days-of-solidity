@@ -48,6 +48,8 @@ You can browse daily folders to see the code and test coverage.
 |-----|--------------------------|-----------------------------------------------|--------------------------------------------------|
 | 1   | ETH Staking Contract     | [View Code](./src/Day_001/ETHStaking.sol)     | [Test](./test/Day_001/ETHStaking.t.sol)         |
 | 2   | Auction House Contract              | [View Code](./src/Day_002/AuctionHouse.sol)    | [Test](./test/Day_002/AuctionHouse.t.sol)        |
+| 3   | Treasure Hunt Contract              | [View Code](./src/Day_003/TreasureHunt.sol)    | [Test](./test/Day_002/TreasureHunt.t.sol)        |
+| 4   | Piggy Bank Contract              | [View Code](./src/Day_004/PiggyBank.sol)    | [Test](./test/Day_002/PiggyBank.t.sol)        |
 
 
 

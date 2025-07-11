@@ -15,10 +15,7 @@ contract TreasureHunt {
         owner = msg.sender;
         require(treasure > 0, "treasure must be greater than 0");
         require(msg.value == treasure, "msg.value must equal _treasure");
-        require(
-            bytes(_secretPhrase).length > 0,
-            "Secret phrase cannot be empty"
-        );
+        require(bytes(_secretPhrase).length > 0, "Secret phrase cannot be empty");
         secretHash = keccak256(abi.encodePacked(_secretPhrase));
         startTime = block.timestamp;
     }
@@ -37,7 +34,7 @@ contract TreasureHunt {
         hasGuessed[msg.sender] = true;
         uint256 payout = address(this).balance;
 
-        (bool success, ) = payable(msg.sender).call{value: payout}("");
+        (bool success,) = payable(msg.sender).call{value: payout}("");
         require(success, "Transfer failed");
     }
 
@@ -50,15 +47,12 @@ contract TreasureHunt {
     }
 
     function reclaimTreasure() external onlyOwner {
-        require(
-            block.timestamp >= startTime + huntDuration,
-            "Hunt hasn't ended yet!"
-        );
+        require(block.timestamp >= startTime + huntDuration, "Hunt hasn't ended yet!");
         require(!isOpened, "Treasure already claimed");
 
         uint256 payout = address(this).balance;
 
-        (bool success, ) = payable(msg.sender).call{value: payout}("");
+        (bool success,) = payable(msg.sender).call{value: payout}("");
         require(success, "Transfer failed");
     }
 

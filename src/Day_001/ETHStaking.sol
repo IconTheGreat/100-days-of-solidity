@@ -10,6 +10,7 @@ contract ETHStaking {
     address[] public stakers;
     mapping(address => uint256) public balances;
     mapping(address => uint256) public stakeTime;
+    mapping(address => bool) public isStaker;
 
     constructor() {
         owner = msg.sender;
@@ -20,30 +21,36 @@ contract ETHStaking {
         _;
     }
 
-    function stake(uint256 _ethAmount) public payable {
-        require(_ethAmount > minimumETH, "can't stake lower than 0.1 ether");
-        balances[msg.sender] += _ethAmount;
+    event Withdraw(address indexed user, uint256 amount);
+    event Stake(address indexed user, uint256 amount);
+    event Completed(uint256 total);
+
+    function stake() public payable {
+        require(msg.value >= minimumETH, "can't stake lower than 0.1 ether");
+        balances[msg.sender] += msg.value;
         stakers.push(msg.sender);
-        totalStakedETH.push(_ethAmount);
+        totalStakedETH.push(msg.value);
         stakeTime[msg.sender] = block.timestamp;
+        isStaker[msg.sender] = true;
+
+        emit Stake(msg.sender, msg.value);
     }
 
     function withdraw(uint256 _amount) external {
-        bool hasStaked = false;
-
-        // looping through the stakers array to get if the msg.sender is a staker
-        for (uint256 i = 0; i < stakers.length; i++) {
-            if (stakers[i] == msg.sender) {
-                hasStaked = true;
-                break;
-            }
-        }
-        require(hasStaked == true, "You have not stake yet");
-        require(block.timestamp >= stakeTime[msg.sender] + lockUpPeriod, "wait for 7 dyas after staking");
+        require(_amount > 0, "Amount must be > 0");
+        require(balances[msg.sender] > 0, "You have no balance to withdraw");
+        require(isStaker[msg.sender], "You have not staked yet");
+        require(block.timestamp >= stakeTime[msg.sender] + lockUpPeriod, "wait for 7 days after staking");
         require(_amount <= balances[msg.sender], "insufficient balance");
         balances[msg.sender] -= _amount;
+        totalStakedETH.push(_amount);
+        if (balances[msg.sender] == 0) {
+            isStaker[msg.sender] = false;
+        }
         (bool success,) = payable(msg.sender).call{value: _amount}("");
         require(success, "Transfer failed");
+
+        emit Withdraw(msg.sender, _amount);
     }
 
     function complete() external onlyOwner {
@@ -51,16 +58,20 @@ contract ETHStaking {
 
         uint256 total;
 
-        // looping through the array of total ether staked
-
-        for (uint256 i = 0; i < totalStakedETH.length; i++) {
-            total += totalStakedETH[i];
+        // Loop over all stakers
+        for (uint256 i = 0; i < stakers.length; i++) {
+            address staker = stakers[i];
+            total += balances[staker];
+            balances[staker] = 0;
+            isStaker[staker] = false;
         }
 
-        // reset total balance to avoid reentrancy
-        total = 0;
-        // transfer total to owner
+        delete stakers;
+        delete totalStakedETH;
+
         (bool success,) = payable(msg.sender).call{value: total}("");
         require(success, "Transfer failed");
+
+        emit Completed(total);
     }
 }
