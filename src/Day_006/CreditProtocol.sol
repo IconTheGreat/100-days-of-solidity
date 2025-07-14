@@ -136,13 +136,7 @@ contract CreditProtocol is ReentrancyGuard {
         debtExists[IOU_ID] = true;
         IOUs.push(IOU_ID);
 
-        emit IOUCreate(
-            msg.sender,
-            IOU_ID,
-            amount,
-            borrower,
-            interestRate
-        );
+        emit IOUCreate(msg.sender, IOU_ID, amount, borrower, interestRate);
     }
 
     function acceptIOU(
