@@ -18,28 +18,12 @@ contract CreditProtocol is ReentrancyGuard {
     error debtAlreadyClearedAndEnded();
 
     //events
-    event IOUCreate(
-        address indexed creator,
-        uint256 IUO_ID,
-        uint256 amount,
-        address borrower,
-        uint256 interestRate
-    );
+    event IOUCreate(address indexed creator, uint256 IUO_ID, uint256 amount, address borrower, uint256 interestRate);
 
     event IOUAccept(uint256 IOU_ID, address borrower, string note);
     event IOUDispute();
-    event debtCleared(
-        uint256 IOU_ID,
-        address lender,
-        address borrower,
-        string note
-    );
-    event IOUEnded(
-        uint256 IOU_ID,
-        address lender,
-        address borrower,
-        string note
-    );
+    event debtCleared(uint256 IOU_ID, address lender, address borrower, string note);
+    event IOUEnded(uint256 IOU_ID, address lender, address borrower, string note);
 
     //state variables
     address public owner;
@@ -69,9 +53,7 @@ contract CreditProtocol is ReentrancyGuard {
     }
 
     modifier onlyLenderOrBorrower(uint256 IOU_ID) {
-        if (
-            !isABorrower[IOU_ID][msg.sender] && !isALender[IOU_ID][msg.sender]
-        ) {
+        if (!isABorrower[IOU_ID][msg.sender] && !isALender[IOU_ID][msg.sender]) {
             revert NotLenderOrBorrower();
         }
         _;
@@ -139,10 +121,7 @@ contract CreditProtocol is ReentrancyGuard {
         emit IOUCreate(msg.sender, IOU_ID, amount, borrower, interestRate);
     }
 
-    function acceptIOU(
-        uint256 IOU_ID,
-        string memory note
-    ) public onlyBorrower(IOU_ID) {
+    function acceptIOU(uint256 IOU_ID, string memory note) public onlyBorrower(IOU_ID) {
         Debt storage IOU = debts[IOU_ID];
         if (hasAccept[IOU_ID]) {
             revert AlreadyAccepted();
@@ -160,10 +139,7 @@ contract CreditProtocol is ReentrancyGuard {
 
     function repayIOU(uint256 IOU_ID) external payable onlyBorrower(IOU_ID) {
         Debt storage IOU = debts[IOU_ID];
-        require(
-            msg.value == IOU.totalLoanWithInterest,
-            "Pls pay full plus the agreed interest"
-        );
+        require(msg.value == IOU.totalLoanWithInterest, "Pls pay full plus the agreed interest");
         if (msg.value <= 0) {
             revert InvalidAmount();
         }
@@ -179,10 +155,7 @@ contract CreditProtocol is ReentrancyGuard {
         emit debtCleared(IOU_ID, IOU.lender, IOU.borrower, IOU.note);
     }
 
-    function raiseDispute(
-        uint256 IOU_ID,
-        string memory issue
-    ) public onlyLenderOrBorrower(IOU_ID) {
+    function raiseDispute(uint256 IOU_ID, string memory issue) public onlyLenderOrBorrower(IOU_ID) {
         Debt storage IOU = debts[IOU_ID];
         if (bytes(issue).length == 0) {
             revert EmptyIssue();
@@ -194,10 +167,7 @@ contract CreditProtocol is ReentrancyGuard {
         disputes[IOU_ID][msg.sender] = issue;
     }
 
-    function addressDispute(
-        uint256 IOU_ID,
-        bool borrowerWins
-    ) public onlyMiddleman(IOU_ID) nonReentrant {
+    function addressDispute(uint256 IOU_ID, bool borrowerWins) public onlyMiddleman(IOU_ID) nonReentrant {
         Debt storage IOU = debts[IOU_ID];
         require(IOU.escrowedAmount > 0, "No escrowed funds");
 
@@ -207,20 +177,18 @@ contract CreditProtocol is ReentrancyGuard {
 
         address recipient = borrowerWins ? IOU.borrower : IOU.lender;
 
-        (bool success, ) = payable(recipient).call{value: amount}("");
+        (bool success,) = payable(recipient).call{value: amount}("");
         require(success, "Transfer failed");
         IOU.ended = true;
     }
 
-    function releaseToLender(
-        uint256 IOU_ID
-    ) external onlyLender(IOU_ID) nonReentrant {
+    function releaseToLender(uint256 IOU_ID) external onlyLender(IOU_ID) nonReentrant {
         Debt storage IOU = debts[IOU_ID];
         require(IOU.cleared == true, "Not paid yet");
         require(IOU.escrowedAmount > 0, "Not escrowed funds");
         uint256 amount = IOU.escrowedAmount;
         IOU.escrowedAmount = 0;
-        (bool success, ) = payable(IOU.lender).call{value: amount}("");
+        (bool success,) = payable(IOU.lender).call{value: amount}("");
         require(success, "Transfer failed");
         IOU.ended = true;
     }

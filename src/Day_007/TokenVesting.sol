@@ -10,16 +10,8 @@ contract TokenVestingContract {
     error MustBeInFuture();
 
     //events
-    event VestingCreated(
-        uint256 vestId,
-        address beneficiary,
-        uint256 totalAmount
-    );
-    event TokensReleased(
-        uint256 vestId,
-        uint256 milestoneIndex,
-        uint256 amount
-    );
+    event VestingCreated(uint256 vestId, address beneficiary, uint256 totalAmount);
+    event TokensReleased(uint256 vestId, uint256 milestoneIndex, uint256 amount);
 
     // State variables
     uint256 public vestIdCounter;
@@ -76,7 +68,7 @@ contract TokenVestingContract {
         v.releasedAmount = releasedAmount;
 
         // Instead of direct assignment, copy each milestone
-        for (uint i = 0; i < cliffs.length; i++) {
+        for (uint256 i = 0; i < cliffs.length; i++) {
             v.cliff.push(cliffs[i]);
         }
         emit VestingCreated(vestId, beneficiary, totalAmount);
@@ -86,7 +78,7 @@ contract TokenVestingContract {
         Vest storage vest = vestings[vestId];
         bool anyReleased = false;
 
-        for (uint i = 0; i < vest.cliff.length; i++) {
+        for (uint256 i = 0; i < vest.cliff.length; i++) {
             VestingMilestone storage milestone = vest.cliff[i];
             require(vest.cliff[i].amount > 0, "No tokens to release");
             if (block.timestamp >= milestone.timestamp && !milestone.released) {
@@ -97,10 +89,7 @@ contract TokenVestingContract {
                 vest.releasedAmount += milestone.amount;
 
                 // Transfer tokens
-                bool success = token.transfer(
-                    vest.beneficiary,
-                    milestone.amount
-                );
+                bool success = token.transfer(vest.beneficiary, milestone.amount);
                 require(success, "Transfer failed");
 
                 anyReleased = true;
@@ -115,15 +104,10 @@ contract TokenVestingContract {
         }
     }
 
-    function getReleasableAmount(
-        uint256 vestId
-    ) public view returns (uint256 total) {
+    function getReleasableAmount(uint256 vestId) public view returns (uint256 total) {
         Vest storage vest = vestings[vestId];
-        for (uint i = 0; i < vest.cliff.length; i++) {
-            if (
-                block.timestamp >= vest.cliff[i].timestamp &&
-                !vest.cliff[i].released
-            ) {
+        for (uint256 i = 0; i < vest.cliff.length; i++) {
+            if (block.timestamp >= vest.cliff[i].timestamp && !vest.cliff[i].released) {
                 total += vest.cliff[i].amount;
             }
         }
