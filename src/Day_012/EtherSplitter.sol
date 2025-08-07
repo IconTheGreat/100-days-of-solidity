@@ -1,53 +1,75 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+/**
+ * @title EthSplitter
+ * @author ICON
+ * @notice A contract to split incoming Ether among multiple recipients based on predefined percentages.
+ * @dev This contract allows the owner to set recipients and their respective percentages, ensuring that the total percentage equals 100.
+ */
 contract EthSplitter {
-    error EthSplitter_NotOwner();
+    //==== Custom Errors ====
+    error EthSplitter__NotOwner();
     error EthSplitter__RecipientsAndPercentagesMustBeTheSameLength();
-    error EthSplitter_TransferFailed();
-    error EthSplitter__InvalidFunctionCall();
-    error EthSplitter_ZeroBalanceInContract();
     error EthSplitter__InvalidPercentages();
+    error EthSplitter_TransferFailed();
 
-    uint256 private constant PERCENTAGE_PRECISION = 100;
-    address public owner;
-    uint256 totalPercentage;
-    mapping(address recipient => uint256 recipientPercent) public s_splits;
-    address payable[] public s_recipients;
-    uint256[] public s_percentages;
+    //==== State Variables ====
+    address public immutable owner;
+    uint8 private constant PERCENTAGE_PRECISION = 100;
 
-    constructor(address payable[] memory recipients, uint256[] memory percentages) {
-        owner = msg.sender;
-        if (recipients.length != percentages.length) {
-            revert EthSplitter__RecipientsAndPercentagesMustBeTheSameLength();
-        }
-        for (uint256 i = 0; i < percentages.length; i++) {
-            totalPercentage += percentages[i];
-        }
-        if (totalPercentage != PERCENTAGE_PRECISION) {
-            revert EthSplitter__InvalidPercentages();
-        }
-        for (uint256 i = 0; i < recipients.length; i++) {
-            s_splits[recipients[i]] = percentages[i];
-            s_recipients.push(recipients[i]);
-            s_percentages.push(percentages[i]);
-        }
-    }
+    address payable[] private s_recipients;
+    uint256[] private s_percentages;
+    mapping(address => uint256) private s_splits;
+
+    //==== Modifiers ====
 
     modifier onlyOwner() {
         if (msg.sender != owner) {
-            revert EthSplitter_NotOwner();
+            revert EthSplitter__NotOwner();
         }
         _;
     }
 
+    //==== Functions ====
+
+    constructor(address payable[] memory recipients, uint256[] memory percentages) {
+        uint256 length = recipients.length;
+        if (length != percentages.length) {
+            revert EthSplitter__RecipientsAndPercentagesMustBeTheSameLength();
+        }
+
+        owner = msg.sender;
+
+        uint256 _totalPercentage;
+        for (uint256 i; i < length;) {
+            _totalPercentage += percentages[i];
+            s_splits[recipients[i]] = percentages[i];
+            s_recipients.push(recipients[i]);
+            s_percentages.push(percentages[i]);
+            unchecked {
+                i++;
+            }
+        }
+
+        if (_totalPercentage != PERCENTAGE_PRECISION) {
+            revert EthSplitter__InvalidPercentages();
+        }
+    }
+
     receive() external payable {
         uint256 totalReceived = msg.value;
-        for (uint256 i = 0; i < s_recipients.length; i++) {
-            uint256 amount = (totalReceived * s_percentages[i]) / PERCENTAGE_PRECISION;
-            (bool success,) = payable(s_recipients[i]).call{value: amount}("");
-            if (!success) {
-                revert EthSplitter_TransferFailed();
+        uint256 length = s_recipients.length;
+
+        for (uint256 i; i < length;) {
+            uint256 percentage = s_percentages[i];
+            uint256 amount = (totalReceived * percentage) / PERCENTAGE_PRECISION;
+
+            (bool success,) = s_recipients[i].call{value: amount}("");
+            if (!success) revert EthSplitter_TransferFailed();
+
+            unchecked {
+                i++;
             }
         }
     }
@@ -56,38 +78,46 @@ contract EthSplitter {
         public
         onlyOwner
     {
-        for (uint256 i = 0; i < s_recipients.length; i++) {
-            delete s_splits[s_recipients[i]];
+        uint256 length = newRecipients.length;
+        if (length != newPercentages.length) {
+            revert EthSplitter__RecipientsAndPercentagesMustBeTheSameLength();
         }
+
+        // Reset storage arrays
         delete s_recipients;
         delete s_percentages;
 
-        for (uint256 i = 0; i < newRecipients.length; i++) {
+        uint256 _totalPercentage;
+        for (uint256 i; i < length;) {
+            _totalPercentage += newPercentages[i];
             s_splits[newRecipients[i]] = newPercentages[i];
             s_recipients.push(newRecipients[i]);
             s_percentages.push(newPercentages[i]);
+            unchecked {
+                i++;
+            }
+        }
+
+        if (_totalPercentage != PERCENTAGE_PRECISION) {
+            revert EthSplitter__InvalidPercentages();
         }
     }
 
     function emergencyWithdraw() public onlyOwner {
-        if (address(this).balance == 0) {
-            revert EthSplitter_ZeroBalanceInContract();
-        }
-        (bool success,) = payable(msg.sender).call{value: address(this).balance}("");
-        if (!success) {
-            revert EthSplitter_TransferFailed();
-        }
+        (bool success,) = owner.call{value: address(this).balance}("");
+        if (!success) revert EthSplitter_TransferFailed();
     }
 
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
-
-    function getRecipients() public view returns (address payable[] memory) {
+    // ===== View functions =====
+    function getRecipients() external view returns (address payable[] memory) {
         return s_recipients;
     }
 
-    fallback() external payable {
-        revert EthSplitter__InvalidFunctionCall();
+    function getPercentages() external view returns (uint256[] memory) {
+        return s_percentages;
+    }
+
+    function getSplit(address recipient) external view returns (uint256) {
+        return s_splits[recipient];
     }
 }
