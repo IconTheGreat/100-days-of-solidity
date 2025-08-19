@@ -13,7 +13,7 @@ contract MyToken {
     error MyToken__CantBeZeroAddress();
     error MyToken__NotOwner();
     error MyToken__LesserBalance();
-    error MyToken__NotApprovedForThisAddress();
+    error MyToken__NotApprovedForThisAmount();
 
     // Events
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -69,7 +69,7 @@ contract MyToken {
 
     function transferFrom(address sender, address receiver, uint256 amount) public returns (bool) {
         if (approvals[sender][msg.sender] < amount) {
-            revert MyToken__NotApprovedForThisAddress();
+            revert MyToken__NotApprovedForThisAmount();
         }
         if (balances[sender] < amount) {
             revert MyToken__LesserBalance();

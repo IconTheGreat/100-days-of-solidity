@@ -42,24 +42,6 @@ Each project includes:
 - Corresponding Foundry tests
 - A README file with project-specific explanations
 
-You can browse daily folders to see the code and test coverage.
-
-| Day | Project Title           | Code Link                                      | Test Link                                        | README Link                                     |
-|-----|--------------------------|-----------------------------------------------|--------------------------------------------------|------------------------------------------------|
-| 1   | ETH Staking Contract     | [View Code](./src/Day_001/ETHStaking.sol)     | [Test](./test/Day_001/ETHStaking.t.sol)         | [README](./src/Day_001/README.md)             |
-| 2   | Auction House Contract   | [View Code](./src/Day_002/AuctionHouse.sol)   | [Test](./test/Day_002/AuctionHouse.t.sol)       | [README](./src/Day_002/README.md)             |
-| 3   | Treasure Hunt Contract   | [View Code](./src/Day_003/TreasureHunt.sol)   | [Test](./test/Day_003/TreasureHunt.t.sol)       | [README](./src/Day_003/README.md)             |
-| 4   | Piggy Bank Contract      | [View Code](./src/Day_004/PiggyBank.sol)      | [Test](./test/Day_004/PiggyBank.t.sol)          | [README](./src/Day_004/README.md)             |
-| 5   | MultiSig Contract        | [View Code](./src/Day_005/MultiSig.sol)       | [Test](./test/Day_005/MultiSig.t.sol)           | [README](./src/Day_005/README.md)             |
-| 6   | IOU Contract             | [View Code](./src/Day_006/CreditProtocol.sol) | [Test](./test/Day_006/CreditProtocol.t.sol)     | [README](./src/Day_006/README.md)             |
-| 7   | Token Vesting Contract   | [View Code](./src/Day_007/TokenVesting.sol)   | [Test](./test/Day_007/TokenVesting.t.sol)       | [README](./src/Day_007/README.md)             |
-
-
-
-
-
----
-
 ## Technologies Used
 
 This repository uses:
@@ -77,7 +59,7 @@ This repository uses:
 If you are learning Solidity, you can:
 
 - Clone the repository to explore individual examples.
-- Read each day’s contract and test files to understand their logic.
+- Read each project’s contract and test files to understand their logic.
 - Run the tests locally to see how contracts behave.
 - Use the code as a reference or starting point for your own projects.
 
@@ -129,5 +111,7 @@ Connect
 If you would like to follow my journey or connect:
 
 Twitter: https://x.com/Icon_The_Great
+
+MyBlog: https://IconTheGreat.github.io
 
 Thank you for visiting this repository. Happy building!
