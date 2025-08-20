@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Test} from "forge-std/Test.sol";
-import {MyToken} from "src/Project_11/MyToken.sol";
+import {MyToken} from "src/Project_011/MyToken.sol";
 
 contract MyTokenTest is Test {
     MyToken public myToken;

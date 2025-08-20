@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 
 import {Test} from "forge-std/Test.sol";
-import {ETHStaking} from "../../src/Project_1/ETHStaking.sol";
+import {ETHStaking} from "../../src/Project_001/ETHStaking.sol";
 
 pragma solidity ^0.8.19;
 
