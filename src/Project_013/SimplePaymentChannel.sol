@@ -9,12 +9,12 @@ pragma solidity ^0.8.19;
 contract SimplePaymentChannel is EIP712, ReentrancyGuard {
     using ECDSA for bytes32;
 
-    error NotOwner(address);
-    error NotReceiver(address);
+    error NotOwner();
+    error NotReceiver();
     error CantBeZeroAddress();
     error AmountCantBeZero();
     error MustBeMoreThanZeroAmount();
-    error NonceUSed();
+    error NonceUsedAlready();
     error InvalidSignature();
     error InsufficientChannelBalance();
     error TxFailed();
@@ -22,6 +22,9 @@ contract SimplePaymentChannel is EIP712, ReentrancyGuard {
     error FundsStillInContract();
     error ChannelDeadlineHasNotMet();
     error ChannelDeadlineMet();
+    error DeadlineCantBeZero();
+    error ChannelAlreadyOpened();
+    error ChannelNotOpened();
 
     address public immutable owner;
     address public immutable receiver;
@@ -35,27 +38,36 @@ contract SimplePaymentChannel is EIP712, ReentrancyGuard {
 
     modifier onlyOwner() {
         if (msg.sender != owner) {
-            revert NotOwner(msg.sender);
+            revert NotOwner();
         }
         _;
     }
 
     modifier onlyReceiver() {
         if (msg.sender != receiver) {
-            revert NotReceiver(msg.sender);
+            revert NotReceiver();
         }
         _;
     }
 
-    constructor(address _receiver) EIP712("SimplePaymentChannel", "1") {
+    constructor(address _receiver, address _owner) EIP712("SimplePaymentChannel", "1") {
         if (_receiver == address(0)) {
             revert CantBeZeroAddress();
         }
-        owner = msg.sender;
+        if (_owner == address(0)) {
+            revert CantBeZeroAddress();
+        }
+        owner = _owner;
         receiver = _receiver;
     }
 
     function openChannel(uint256 _channelDeadline) public onlyOwner {
+        if (_channelDeadline == 0) {
+            revert DeadlineCantBeZero();
+        }
+        if (hasChannelOpened) {
+            revert ChannelAlreadyOpened();
+        }
         channelDeadline = _channelDeadline;
         hasChannelOpened = true;
     }
@@ -64,6 +76,10 @@ contract SimplePaymentChannel is EIP712, ReentrancyGuard {
         if (msg.value == 0) {
             revert AmountCantBeZero();
         }
+        if (!hasChannelOpened) {
+            revert ChannelNotOpened();
+        }
+
         balance += msg.value;
     }
 
@@ -73,7 +89,7 @@ contract SimplePaymentChannel is EIP712, ReentrancyGuard {
         onlyReceiver
     {
         if (amount == 0) revert MustBeMoreThanZeroAmount();
-        if (usedNonce[nonce] == true) revert NonceUSed();
+        if (usedNonce[nonce] == true) revert NonceUsedAlready();
         if (block.timestamp > channelDeadline) revert ChannelDeadlineMet();
 
         bytes32 structHash = keccak256(abi.encode(PAYMENT_TYPEHASH, address(this), receiver, amount, nonce));
@@ -105,5 +121,9 @@ contract SimplePaymentChannel is EIP712, ReentrancyGuard {
         } else {
             revert ChannelStillOpened();
         }
+    }
+
+    function getHasChannelOpened() public view returns (bool) {
+        return hasChannelOpened;
     }
 }
